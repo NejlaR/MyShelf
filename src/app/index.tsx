@@ -1,98 +1,91 @@
-import * as Device from 'expo-device';
-import { Platform, StyleSheet } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { AnimatedIcon } from '@/components/animated-icon';
-import { HintRow } from '@/components/hint-row';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { WebBadge } from '@/components/web-badge';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
-
-function getDevMenuHint() {
-  if (Platform.OS === 'web') {
-    return <ThemedText type="small">use browser devtools</ThemedText>;
-  }
-  if (Device.isDevice) {
-    return (
-      <ThemedText type="small">
-        shake device or press <ThemedText type="code">m</ThemedText> in terminal
-      </ThemedText>
-    );
-  }
-  const shortcut = Platform.OS === 'android' ? 'cmd+m (or ctrl+m)' : 'cmd+d';
+export default function MyShelfScreen() {
   return (
-    <ThemedText type="small">
-      press <ThemedText type="code">{shortcut}</ThemedText>
-    </ThemedText>
-  );
-}
+    <SafeAreaView style={styles.screen}>
+      <ScrollView contentContainerStyle={styles.content}>
+        <Text style={styles.logo}>MyShelf</Text>
+        <Text style={styles.heading}>My Books</Text>
+        <Text style={styles.subtitle}>Your little library.</Text>
 
-export default function HomeScreen() {
-  return (
-    <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <ThemedView style={styles.heroSection}>
-          <AnimatedIcon />
-          <ThemedText type="title" style={styles.title}>
-            Welcome to&nbsp;Expo
-          </ThemedText>
-        </ThemedView>
+        <View style={styles.card}>
+          <Text style={styles.bookTitle}>The Little Prince</Text>
+          <Text style={styles.author}>Antoine de Saint-Exupéry</Text>
+          <Text style={styles.status}>Currently Reading</Text>
+        </View>
 
-        <ThemedText type="code" style={styles.code}>
-          get started
-        </ThemedText>
+        <View style={styles.card}>
+          <Text style={styles.bookTitle}>The Hobbit</Text>
+          <Text style={styles.author}>J. R. R. Tolkien</Text>
+          <Text style={styles.status}>Want to Read</Text>
+        </View>
 
-        <ThemedView type="backgroundElement" style={styles.stepContainer}>
-          <HintRow
-            title="Try editing"
-            hint={<ThemedText type="code">src/app/index.tsx</ThemedText>}
-          />
-          <HintRow title="Dev tools" hint={getDevMenuHint()} />
-          <HintRow
-            title="Fresh start"
-            hint={<ThemedText type="code">npm run reset-project</ThemedText>}
-          />
-        </ThemedView>
-
-        {Platform.OS === 'web' && <WebBadge />}
-      </SafeAreaView>
-    </ThemedView>
+        <View style={styles.button}>
+          <Text style={styles.buttonText}>+ Add Book</Text>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  screen: {
     flex: 1,
-    justifyContent: 'center',
-    flexDirection: 'row',
+    backgroundColor: '#F7F3EC',
   },
-  safeArea: {
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    alignItems: 'center',
-    gap: Spacing.three,
-    paddingBottom: BottomTabInset + Spacing.three,
-    maxWidth: MaxContentWidth,
+  content: {
+    padding: 24,
+    paddingBottom: 120,
   },
-  heroSection: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    gap: Spacing.four,
+  logo: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#526B50',
+    marginBottom: 28,
   },
-  title: {
+  heading: {
+    fontSize: 32,
+    fontWeight: '700',
+    color: '#283C30',
+  },
+  subtitle: {
+    fontSize: 16,
+    color: '#666666',
+    marginTop: 8,
+    marginBottom: 28,
+  },
+  card: {
+    backgroundColor: '#FFFFFF',
+    padding: 22,
+    borderRadius: 16,
+    marginBottom: 16,
+  },
+  bookTitle: {
+    fontSize: 21,
+    fontWeight: '600',
+    color: '#283C30',
+  },
+  author: {
+    fontSize: 15,
+    color: '#666666',
+    marginTop: 8,
+  },
+  status: {
+    color: '#526B50',
+    fontWeight: '500',
+    marginTop: 18,
+  },
+  button: {
+    backgroundColor: '#374B3E',
+    padding: 18,
+    borderRadius: 14,
+    marginTop: 12,
+  },
+  buttonText: {
+    color: '#FFFFFF',
     textAlign: 'center',
-  },
-  code: {
-    textTransform: 'uppercase',
-  },
-  stepContainer: {
-    gap: Spacing.three,
-    alignSelf: 'stretch',
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.four,
-    borderRadius: Spacing.four,
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
