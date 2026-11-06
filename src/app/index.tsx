@@ -1,91 +1,189 @@
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSyncExternalStore } from 'react';
+import {
+  StyleSheet,
+  Text,
+  View,
+  useWindowDimensions,
+} from 'react-native';
+
+import { BookCard } from '@/components/BookCard';
+import { ShelfScreen } from '@/components/shelf-screen';
+import { FontSize, Radius, Spacing } from '@/constants/theme';
+import { books } from '@/data/books';
+import { useTheme } from '@/hooks/use-theme';
+
+const subscribe = () => () => {};
+const getClientSnapshot = () => true;
+const getServerSnapshot = () => false;
 
 export default function MyShelfScreen() {
+  const theme = useTheme();
+  const { width } = useWindowDimensions();
+
+  const hasHydrated = useSyncExternalStore(
+    subscribe,
+    getClientSnapshot,
+    getServerSnapshot
+  );
+
+  const columns = hasHydrated
+    ? width >= 900
+      ? 3
+      : width >= 600
+        ? 2
+        : 1
+    : 1;
+
+  const summary = books.reduce(
+    (result, book) => ({
+      total: result.total + 1,
+      reading:
+        result.reading + (book.status === 'Currently Reading' ? 1 : 0),
+      finished:
+        result.finished + (book.status === 'Finished' ? 1 : 0),
+    }),
+    { total: 0, reading: 0, finished: 0 }
+  );
+
+  const statistics = [
+    { label: 'Books', value: summary.total },
+    { label: 'Reading', value: summary.reading },
+    { label: 'Finished', value: summary.finished },
+  ];
+
+  const cardWidth =
+    columns === 3
+      ? '33.333333%'
+      : columns === 2
+        ? '50%'
+        : '100%';
+
   return (
-    <SafeAreaView style={styles.screen}>
-      <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.logo}>MyShelf</Text>
-        <Text style={styles.heading}>My Books</Text>
-        <Text style={styles.subtitle}>Your little library.</Text>
+    <ShelfScreen>
+      <Text style={[styles.logo, { color: theme.primary }]}>
+        MyShelf
+      </Text>
 
-        <View style={styles.card}>
-          <Text style={styles.bookTitle}>The Little Prince</Text>
-          <Text style={styles.author}>Antoine de Saint-Exupéry</Text>
-          <Text style={styles.status}>Currently Reading</Text>
-        </View>
+      <Text style={[styles.heading, { color: theme.text }]}>
+        My Books
+      </Text>
 
-        <View style={styles.card}>
-          <Text style={styles.bookTitle}>The Hobbit</Text>
-          <Text style={styles.author}>J. R. R. Tolkien</Text>
-          <Text style={styles.status}>Want to Read</Text>
-        </View>
+      <Text style={[styles.subtitle, { color: theme.muted }]}>
+        Your little library.
+      </Text>
 
-        <View style={styles.button}>
-          <Text style={styles.buttonText}>+ Add Book</Text>
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+      <View style={styles.summaryRow}>
+        {statistics.map((statistic) => (
+          <View
+            key={statistic.label}
+            style={[
+              styles.summaryBox,
+              {
+                backgroundColor: theme.card,
+                borderColor: theme.border,
+              },
+            ]}
+          >
+            <Text
+              style={[styles.summaryNumber, { color: theme.primary }]}
+            >
+              {statistic.value}
+            </Text>
+
+            <Text
+              style={[styles.summaryLabel, { color: theme.muted }]}
+            >
+              {statistic.label}
+            </Text>
+          </View>
+        ))}
+      </View>
+
+      <View style={styles.grid}>
+        {books.map((book) => (
+          <View
+            key={book.id}
+            style={[styles.cardSlot, { width: cardWidth }]}
+          >
+            <BookCard book={book} style={styles.bookCard} />
+          </View>
+        ))}
+      </View>
+
+      <View
+        style={[
+          styles.button,
+          { backgroundColor: theme.primary },
+        ]}
+      >
+        <Text
+          style={[styles.buttonText, { color: theme.onPrimary }]}
+        >
+          + Add Book
+        </Text>
+      </View>
+    </ShelfScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: '#F7F3EC',
-  },
-  content: {
-    padding: 24,
-    paddingBottom: 120,
-  },
   logo: {
-    fontSize: 18,
+    fontSize: FontSize.title,
     fontWeight: '700',
-    color: '#526B50',
-    marginBottom: 28,
+    marginBottom: Spacing.lg,
   },
   heading: {
-    fontSize: 32,
+    fontSize: FontSize.hero,
     fontWeight: '700',
-    color: '#283C30',
   },
   subtitle: {
-    fontSize: 16,
-    color: '#666666',
-    marginTop: 8,
-    marginBottom: 28,
+    fontSize: FontSize.body,
+    marginTop: Spacing.sm,
+    marginBottom: Spacing.lg,
   },
-  card: {
-    backgroundColor: '#FFFFFF',
-    padding: 22,
-    borderRadius: 16,
-    marginBottom: 16,
+  summaryRow: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+    marginBottom: Spacing.lg,
   },
-  bookTitle: {
-    fontSize: 21,
-    fontWeight: '600',
-    color: '#283C30',
+  summaryBox: {
+    flex: 1,
+    alignItems: 'center',
+    paddingHorizontal: Spacing.xs,
+    paddingVertical: Spacing.md,
+    borderWidth: 1,
+    borderRadius: Radius.md,
+    gap: Spacing.xs,
   },
-  author: {
-    fontSize: 15,
-    color: '#666666',
-    marginTop: 8,
+  summaryNumber: {
+    fontSize: FontSize.hero,
+    fontWeight: '700',
   },
-  status: {
-    color: '#526B50',
-    fontWeight: '500',
-    marginTop: 18,
+  summaryLabel: {
+    fontSize: FontSize.small,
+    textAlign: 'center',
+  },
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginHorizontal: -Spacing.sm,
+  },
+  cardSlot: {
+    paddingHorizontal: Spacing.sm,
+    paddingBottom: Spacing.md,
+  },
+  bookCard: {
+    width: '100%',
+    flex: 1,
   },
   button: {
-    backgroundColor: '#374B3E',
-    padding: 18,
-    borderRadius: 14,
-    marginTop: 12,
+    padding: Spacing.md,
+    borderRadius: Radius.md,
+    marginTop: Spacing.sm,
   },
   buttonText: {
-    color: '#FFFFFF',
     textAlign: 'center',
-    fontSize: 16,
+    fontSize: FontSize.body,
     fontWeight: '600',
   },
 });

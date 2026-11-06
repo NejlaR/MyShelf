@@ -1,56 +1,88 @@
-# Welcome to your Expo app 👋
+# MyShelf
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+MyShelf is a personal book library built with React Native, Expo SDK 58 and TypeScript.
 
-## Get started
+Users can view books, reading statuses and book details. The current version uses mock data.
 
-1. Install dependencies
+## Run
 
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **src/app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```sh
+npm install
+npm start
 ```
 
-This command will move the starter code to the **example** directory and create a blank **src/app** directory where you can start developing.
+Open the QR code in a compatible Expo Go version.
 
-### Other setup steps
+To open the app in a browser, press `w` in the Expo terminal.
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+If PowerShell blocks npm, use:
 
-## Learn more
+```sh
+npm.cmd start
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+## Week 5 — Theme and Layout
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+- Shared light and dark colours in `src/constants/theme.ts`.
+- Automatic theme selection through `src/hooks/use-theme.ts`.
+- Shared spacing, font sizes and corner radii.
+- Theme colours applied to screens, cards, navigation and status bar icons.
+- Reusable book cards with 16:9 images and reading-status badges.
+- Summary boxes calculated from book data.
+- Responsive layout:
+  - One column below 600.
+  - Two columns from 600.
+  - Three columns from 900.
+- Book details centred with a maximum width of 600.
+- Safe area support and scrollable content.
 
-## Join the community
+The Add Book control is a static preview. Adding, editing and saving books will be implemented in later milestones.
 
-Join our community of developers creating universal apps.
+## Project Structure
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- `src/app/index.tsx` — book cards and summary statistics.
+- `src/app/explore.tsx` — details of the first sample book.
+- `src/components/BookCard.tsx` — reusable book card.
+- `src/components/shelf-screen.tsx` — shared screen container.
+- `src/constants/theme.ts` — colours and design scales.
+- `src/hooks/use-theme.ts` — selects light or dark colours.
+- `src/data/books.ts` — sample book data.
+- `docs/` — screenshots.
+
+## Screenshots
+
+### Light mode
+
+![Home in light mode](docs/home-light.png)
+
+### Dark mode
+
+![Home in dark mode](docs/home-dark.jpg)
+
+## Manual Checks
+
+- Switch between light and dark mode while the app is running.
+- Increase the phone's text size and check wrapping and scrolling.
+- Resize the browser to check one, two and three columns.
+- Check that book details stay centred on wide screens.
+- Scroll to the bottom and check that the last item is fully visible.
+
+The app keeps portrait orientation on the phone. Different widths are tested in the browser.
+
+## Code Explanation
+
+`StyleSheet.create` defines layout and text styles.
+
+`useTheme` selects colours according to the device's colour scheme.
+
+`useWindowDimensions` determines the number of columns.
+
+`useSyncExternalStore` keeps the initial server and browser column layout consistent before adapting to the browser width.
+
+`reduce` calculates summary statistics from the sample books.
+
+`SafeAreaView` and safe area insets keep content clear of system bars.
+
+`ScrollView` keeps content accessible on smaller screens and with larger text.
+
+Book cover images are loaded from Open Library and require an internet connection.

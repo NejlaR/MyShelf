@@ -1,40 +1,71 @@
-/**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://unistyl.es/), etc.
- */
-
 import '@/global.css';
 
 import { Platform } from 'react-native';
 
 export const Colors = {
   light: {
-    text: '#000000',
-    background: '#ffffff',
-    backgroundElement: '#F0F0F3',
-    backgroundSelected: '#E0E1E6',
-    textSecondary: '#60646C',
+    text: '#283C30',
+    muted: '#666666',
+    background: '#F7F3EC',
+    card: '#FFFFFF',
+    border: '#D8DED4',
+    primary: '#374B3E',
+    onPrimary: '#FFFFFF',
+    backgroundElement: '#FFFFFF',
+    backgroundSelected: '#E4EBDD',
+    textSecondary: '#526B50',
   },
   dark: {
-    text: '#ffffff',
-    background: '#000000',
-    backgroundElement: '#212225',
-    backgroundSelected: '#2E3135',
-    textSecondary: '#B0B4BA',
+    text: '#EDF3ED',
+    muted: '#B4C0B7',
+    background: '#151E1A',
+    card: '#223029',
+    border: '#405147',
+    primary: '#A5D6AD',
+    onPrimary: '#15251A',
+    backgroundElement: '#223029',
+    backgroundSelected: '#344B3C',
+    textSecondary: '#B4C0B7',
   },
 } as const;
 
+export type Theme = (typeof Colors)['light'] | (typeof Colors)['dark'];
+
 export type ThemeColor = keyof typeof Colors.light & keyof typeof Colors.dark;
+
+export const Spacing = {
+  xs: 4,
+  sm: 8,
+  md: 16,
+  lg: 24,
+  xl: 32,
+  half: 2,
+  one: 4,
+  two: 8,
+  three: 16,
+  four: 24,
+  five: 32,
+  six: 64,
+} as const;
+
+export const FontSize = {
+  small: 13,
+  body: 16,
+  title: 20,
+  hero: 28,
+} as const;
+
+export const Radius = {
+  sm: 8,
+  md: 12,
+  pill: 999,
+} as const;
 
 export const Fonts = Platform.select({
   ios: {
-    /** iOS `UIFontDescriptorSystemDesignDefault` */
     sans: 'system-ui',
-    /** iOS `UIFontDescriptorSystemDesignSerif` */
     serif: 'ui-serif',
-    /** iOS `UIFontDescriptorSystemDesignRounded` */
     rounded: 'ui-rounded',
-    /** iOS `UIFontDescriptorSystemDesignMonospaced` */
     mono: 'ui-monospace',
   },
   default: {
@@ -51,15 +82,7 @@ export const Fonts = Platform.select({
   },
 });
 
-export const Spacing = {
-  half: 2,
-  one: 4,
-  two: 8,
-  three: 16,
-  four: 24,
-  five: 32,
-  six: 64,
-} as const;
+export const BottomTabInset =
+  Platform.select({ ios: 50, android: 80 }) ?? 0;
 
-export const BottomTabInset = Platform.select({ ios: 50, android: 80 }) ?? 0;
 export const MaxContentWidth = 800;

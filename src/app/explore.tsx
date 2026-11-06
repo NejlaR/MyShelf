@@ -1,61 +1,139 @@
-import { StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Image, StyleSheet, Text, View } from 'react-native';
+
+import { ShelfScreen } from '@/components/shelf-screen';
+import { FontSize, Radius, Spacing } from '@/constants/theme';
+import { books } from '@/data/books';
+import { useTheme } from '@/hooks/use-theme';
 
 export default function BookDetailsScreen() {
-  return (
-    <SafeAreaView style={styles.screen}>
-      <Text style={styles.heading}>Book Details</Text>
+  const theme = useTheme();
+  const book = books[0];
 
-      <View style={styles.card}>
-        <Text style={styles.title}>The Little Prince</Text>
-        <Text style={styles.author}>Antoine de Saint-Exupéry</Text>
-        <Text style={styles.status}>Currently Reading</Text>
-
-        <Text style={styles.description}>
-          The story of a little prince who travels to different planets
-          and learns about friendship, love, and responsibility.
+  if (!book) {
+    return (
+      <ShelfScreen>
+        <Text style={{ color: theme.text }}>
+          No book available.
         </Text>
+      </ShelfScreen>
+    );
+  }
+
+  const details = [
+    { label: 'Author', value: book.author },
+    { label: 'Status', value: book.status },
+  ];
+
+  return (
+    <ShelfScreen>
+      <View style={styles.container}>
+        <Text style={[styles.heading, { color: theme.text }]}>
+          Book Details
+        </Text>
+
+        <View
+          style={[
+            styles.card,
+            {
+              backgroundColor: theme.card,
+              borderColor: theme.border,
+            },
+          ]}
+        >
+          <Image
+            source={{ uri: book.photoUrl }}
+            style={styles.photo}
+            accessibilityLabel={`Cover of ${book.title}`}
+            resizeMode="cover"
+          />
+
+          <View style={styles.content}>
+            <Text style={[styles.title, { color: theme.text }]}>
+              {book.title}
+            </Text>
+
+            {details.map((detail) => (
+              <View
+                key={detail.label}
+                style={[
+                  styles.detailRow,
+                  { borderBottomColor: theme.border },
+                ]}
+              >
+                <Text
+                  style={[styles.label, { color: theme.muted }]}
+                >
+                  {detail.label}
+                </Text>
+
+                <Text
+                  style={[styles.value, { color: theme.text }]}
+                >
+                  {detail.value}
+                </Text>
+              </View>
+            ))}
+
+            <Text
+              style={[styles.description, { color: theme.text }]}
+            >
+              {book.description}
+            </Text>
+          </View>
+        </View>
       </View>
-    </SafeAreaView>
+    </ShelfScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    padding: 24,
-    backgroundColor: '#F7F3EC',
+  container: {
+    width: '100%',
+    maxWidth: 600,
+    alignSelf: 'center',
   },
   heading: {
-    fontSize: 30,
+    fontSize: FontSize.hero,
     fontWeight: '700',
-    color: '#283C30',
-    marginBottom: 28,
+    marginBottom: Spacing.lg,
   },
   card: {
-    padding: 24,
-    borderRadius: 16,
-    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderRadius: Radius.md,
+    overflow: 'hidden',
+  },
+  photo: {
+    width: '100%',
+    aspectRatio: 16 / 9,
+  },
+  content: {
+    padding: Spacing.md,
+    gap: Spacing.md,
   },
   title: {
-    fontSize: 26,
+    fontSize: FontSize.hero,
     fontWeight: '700',
-    color: '#283C30',
   },
-  author: {
-    fontSize: 16,
-    color: '#666666',
-    marginTop: 10,
+  detailRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    gap: Spacing.md,
+    paddingBottom: Spacing.sm,
+    borderBottomWidth: 1,
   },
-  status: {
-    color: '#526B50',
+  label: {
+    fontSize: FontSize.body,
+    flexShrink: 1,
+  },
+  value: {
+    fontSize: FontSize.body,
     fontWeight: '600',
-    marginTop: 20,
+    textAlign: 'right',
+    flex: 1,
   },
   description: {
-    fontSize: 16,
-    lineHeight: 25,
-    color: '#444444',
-    marginTop: 24,
+    fontSize: FontSize.body,
+    lineHeight: 24,
   },
 });
