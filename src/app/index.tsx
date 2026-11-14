@@ -1,6 +1,8 @@
-import { useState, useSyncExternalStore } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
 import {
+  ActivityIndicator,
   FlatList,
+  Pressable,
   StyleSheet,
   Text,
   View,
@@ -11,27 +13,71 @@ import {
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
 
-import { BookCard } from '@/components/BookCard';
+import { BookCard, type Book } from '@/components/BookCard';
 import EmptyState from '@/components/EmptyState';
 import { FontSize, Radius, Spacing } from '@/constants/theme';
-import { books } from '@/data/books';
+import { fetchBooks } from '@/data/api';
 import { useTheme } from '@/hooks/use-theme';
 
 const subscribe = () => () => {};
 const getClientSnapshot = () => true;
 const getServerSnapshot = () => false;
 
+type LoadStatus = 'loading' | 'error' | 'ready';
+
 export default function MyShelfScreen() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
+
   const [contentWidth, setContentWidth] = useState(0);
+  const [books, setBooks] = useState<Book[]>([]);
+  const [status, setStatus] = useState<LoadStatus>('loading');
+  const [errorMessage, setErrorMessage] = useState('');
+  const [attempt, setAttempt] = useState(0);
 
   const hasHydrated = useSyncExternalStore(
     subscribe,
     getClientSnapshot,
     getServerSnapshot
   );
+
+  useEffect(() => {
+    let ignore = false;
+
+    async function loadBooks() {
+      try {
+        const result = await fetchBooks();
+
+        if (!ignore) {
+          setBooks(result);
+          setErrorMessage('');
+          setStatus('ready');
+        }
+      } catch (error) {
+        if (!ignore) {
+          setErrorMessage(
+            error instanceof Error
+              ? error.message
+              : 'Could not load books'
+          );
+          setStatus('error');
+        }
+      }
+    }
+
+    void loadBooks();
+
+    return () => {
+      ignore = true;
+    };
+  }, [attempt]);
+
+  function retry() {
+    setStatus('loading');
+    setErrorMessage('');
+    setAttempt((current) => current + 1);
+  }
 
   const screenWidth = hasHydrated ? width : 360;
 
@@ -86,10 +132,52 @@ export default function MyShelfScreen() {
         ]}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <EmptyState
-              title="No books yet"
-              message="Your books will appear here."
-            />
+            {status === 'loading' ? (
+              <View style={styles.stateBox}>
+                <ActivityIndicator
+                  size="large"
+                  color={theme.primary}
+                  accessibilityLabel="Loading books"
+                />
+
+                <Text style={[styles.message, { color: theme.muted }]}>
+                  Loading books...
+                </Text>
+              </View>
+            ) : status === 'error' ? (
+              <View style={styles.stateBox}>
+                <Text
+                  accessibilityRole="alert"
+                  style={[styles.stateTitle, { color: theme.text }]}
+                >
+                  {errorMessage}
+                </Text>
+
+                <Pressable
+                  onPress={retry}
+                  accessibilityRole="button"
+                  style={({ pressed }) => [
+                    styles.button,
+                    { backgroundColor: theme.primary },
+                    pressed && styles.pressed,
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.buttonText,
+                      { color: theme.onPrimary },
+                    ]}
+                  >
+                    Try again
+                  </Text>
+                </Pressable>
+              </View>
+            ) : (
+              <EmptyState
+                title="No books yet"
+                message="Your books will appear here."
+              />
+            )}
           </View>
         }
         ListHeaderComponent={
@@ -146,18 +234,23 @@ export default function MyShelfScreen() {
         }
         ListHeaderComponentStyle={styles.header}
         ListFooterComponent={
-          <View
-            style={[
-              styles.button,
-              { backgroundColor: theme.primary },
-            ]}
-          >
-            <Text
-              style={[styles.buttonText, { color: theme.onPrimary }]}
+          status === 'ready' ? (
+            <View
+              style={[
+                styles.button,
+                { backgroundColor: theme.primary },
+              ]}
             >
-              + Add Book
-            </Text>
-          </View>
+              <Text
+                style={[
+                  styles.buttonText,
+                  { color: theme.onPrimary },
+                ]}
+              >
+                + Add Book
+              </Text>
+            </View>
+          ) : undefined
         }
         ListFooterComponentStyle={styles.footer}
       />
@@ -179,6 +272,22 @@ const styles = StyleSheet.create({
   },
   emptyContainer: {
     flex: 1,
+  },
+  stateBox: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.md,
+    padding: Spacing.lg,
+  },
+  stateTitle: {
+    fontSize: FontSize.title,
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+  message: {
+    fontSize: FontSize.body,
+    textAlign: 'center',
   },
   columnRow: {
     gap: Spacing.md,
@@ -235,5 +344,8 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: FontSize.body,
     fontWeight: '600',
+  },
+  pressed: {
+    opacity: 0.7,
   },
 });
