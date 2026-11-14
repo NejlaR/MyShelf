@@ -83,6 +83,25 @@ The app keeps portrait orientation on the phone. Different widths are tested in 
 
 `SafeAreaView` and safe area insets keep content clear of system bars.
 
-`ScrollView` keeps content accessible on smaller screens and with larger text.
+`FlatList` displays the book list, while `ScrollView` keeps book details scrollable.
 
 Book cover images are loaded from Open Library and require an internet connection.
+
+## Feature Checklist
+
+- [x] Five sample books with TypeScript types
+- [x] Reusable book cards with press feedback
+- [x] Reusable book details component
+- [x] Light and dark themes
+- [x] Responsive list layout
+- [x] Empty, loading and error states
+- [x] Retry and pull-to-refresh
+- [ ] Filter books by reading status
+- [ ] Delete books with confirmation
+- [ ] Sort books
+- [ ] Open book details from the list
+- [ ] Add and edit books
+- [ ] Save data on the device
+- [ ] User login and Supabase storage
+- [ ] Select book cover photos from the device
+- [ ] Android APK build
