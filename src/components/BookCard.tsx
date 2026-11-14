@@ -1,10 +1,10 @@
 import {
-    Image,
-    StyleSheet,
-    Text,
-    View,
-    type StyleProp,
-    type ViewStyle,
+  Image,
+  StyleSheet,
+  Text,
+  View,
+  type StyleProp,
+  type ViewStyle,
 } from 'react-native';
 
 import { FontSize, Radius, Spacing } from '@/constants/theme';
@@ -38,7 +38,7 @@ export function BookCard({ book, style }: BookCardProps) {
         style,
       ]}
     >
-      <View>
+      <View style={styles.photoContainer}>
         <Image
           source={{ uri: book.photoUrl }}
           style={styles.photo}
@@ -46,17 +46,19 @@ export function BookCard({ book, style }: BookCardProps) {
           resizeMode="cover"
         />
 
-        <Text
-          style={[
-            styles.badge,
-            {
-              backgroundColor: theme.primary,
-              color: theme.onPrimary,
-            },
-          ]}
-        >
-          {book.status}
-        </Text>
+        <View style={styles.badgeRow}>
+          <Text
+            style={[
+              styles.badge,
+              {
+                backgroundColor: theme.primary,
+                color: theme.onPrimary,
+              },
+            ]}
+          >
+            {book.status}
+          </Text>
+        </View>
       </View>
 
       <View style={styles.content}>
@@ -78,21 +80,30 @@ const styles = StyleSheet.create({
     borderRadius: Radius.md,
     overflow: 'hidden',
   },
-  photo: {
+  photoContainer: {
     width: '100%',
     aspectRatio: 16 / 9,
   },
-  badge: {
+  photo: {
+    width: '100%',
+    height: '100%',
+  },
+  badgeRow: {
     position: 'absolute',
     top: Spacing.sm,
+    left: Spacing.sm,
     right: Spacing.sm,
-    maxWidth: '90%',
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+  },
+  badge: {
+    flexShrink: 1,
     paddingHorizontal: Spacing.sm,
     paddingVertical: Spacing.xs,
     borderRadius: Radius.pill,
     fontSize: FontSize.small,
     fontWeight: '600',
-    flexShrink: 1,
+    textAlign: 'center',
   },
   content: {
     padding: Spacing.md,
