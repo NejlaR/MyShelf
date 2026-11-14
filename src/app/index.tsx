@@ -1,38 +1,17 @@
-import { useSyncExternalStore } from 'react';
+import { FlatList, StyleSheet, Text, View } from 'react-native';
 import {
-  StyleSheet,
-  Text,
-  View,
-  useWindowDimensions,
-} from 'react-native';
+  SafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 
 import { BookCard } from '@/components/BookCard';
-import { ShelfScreen } from '@/components/shelf-screen';
 import { FontSize, Radius, Spacing } from '@/constants/theme';
 import { books } from '@/data/books';
 import { useTheme } from '@/hooks/use-theme';
 
-const subscribe = () => () => {};
-const getClientSnapshot = () => true;
-const getServerSnapshot = () => false;
-
 export default function MyShelfScreen() {
   const theme = useTheme();
-  const { width } = useWindowDimensions();
-
-  const hasHydrated = useSyncExternalStore(
-    subscribe,
-    getClientSnapshot,
-    getServerSnapshot
-  );
-
-  const columns = hasHydrated
-    ? width >= 900
-      ? 3
-      : width >= 600
-        ? 2
-        : 1
-    : 1;
+  const insets = useSafeAreaInsets();
 
   const summary = books.reduce(
     (result, book) => ({
@@ -51,82 +30,112 @@ export default function MyShelfScreen() {
     { label: 'Finished', value: summary.finished },
   ];
 
-  const cardWidth =
-    columns === 3
-      ? '33.333333%'
-      : columns === 2
-        ? '50%'
-        : '100%';
-
   return (
-    <ShelfScreen>
-      <Text style={[styles.logo, { color: theme.primary }]}>
-        MyShelf
-      </Text>
+    <SafeAreaView
+      edges={['top', 'left', 'right']}
+      style={[styles.screen, { backgroundColor: theme.background }]}
+    >
+      <FlatList
+        style={styles.list}
+        data={books}
+        keyExtractor={(book) => book.id}
+        renderItem={({ item }) => <BookCard book={item} />}
+        ItemSeparatorComponent={() => (
+          <View style={styles.separator} />
+        )}
+        contentContainerStyle={[
+          styles.content,
+          { paddingBottom: Spacing.md + insets.bottom },
+        ]}
+        ListHeaderComponent={
+          <View>
+            <Text style={[styles.logo, { color: theme.primary }]}>
+              MyShelf
+            </Text>
 
-      <Text style={[styles.heading, { color: theme.text }]}>
-        My Books
-      </Text>
+            <Text style={[styles.heading, { color: theme.text }]}>
+              My Books
+            </Text>
 
-      <Text style={[styles.subtitle, { color: theme.muted }]}>
-        Your little library.
-      </Text>
+            <Text style={[styles.subtitle, { color: theme.muted }]}>
+              Your little library.
+            </Text>
 
-      <View style={styles.summaryRow}>
-        {statistics.map((statistic) => (
+            <View style={styles.summaryRow}>
+              {statistics.map((statistic) => (
+                <View
+                  key={statistic.label}
+                  style={[
+                    styles.summaryBox,
+                    {
+                      backgroundColor: theme.card,
+                      borderColor: theme.border,
+                    },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.summaryNumber,
+                      { color: theme.primary },
+                    ]}
+                  >
+                    {statistic.value}
+                  </Text>
+
+                  <Text
+                    style={[
+                      styles.summaryLabel,
+                      { color: theme.muted },
+                    ]}
+                  >
+                    {statistic.label}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        }
+        ListHeaderComponentStyle={styles.header}
+        ListFooterComponent={
           <View
-            key={statistic.label}
             style={[
-              styles.summaryBox,
-              {
-                backgroundColor: theme.card,
-                borderColor: theme.border,
-              },
+              styles.button,
+              { backgroundColor: theme.primary },
             ]}
           >
             <Text
-              style={[styles.summaryNumber, { color: theme.primary }]}
+              style={[styles.buttonText, { color: theme.onPrimary }]}
             >
-              {statistic.value}
-            </Text>
-
-            <Text
-              style={[styles.summaryLabel, { color: theme.muted }]}
-            >
-              {statistic.label}
+              + Add Book
             </Text>
           </View>
-        ))}
-      </View>
-
-      <View style={styles.grid}>
-        {books.map((book) => (
-          <View
-            key={book.id}
-            style={[styles.cardSlot, { width: cardWidth }]}
-          >
-            <BookCard book={book} style={styles.bookCard} />
-          </View>
-        ))}
-      </View>
-
-      <View
-        style={[
-          styles.button,
-          { backgroundColor: theme.primary },
-        ]}
-      >
-        <Text
-          style={[styles.buttonText, { color: theme.onPrimary }]}
-        >
-          + Add Book
-        </Text>
-      </View>
-    </ShelfScreen>
+        }
+        ListFooterComponentStyle={styles.footer}
+      />
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+  },
+  list: {
+    flex: 1,
+  },
+  content: {
+    paddingHorizontal: Spacing.md,
+    paddingTop: Spacing.lg,
+  },
+  header: {
+    marginBottom: Spacing.md,
+  },
+  footer: {
+    marginTop: Spacing.lg,
+  },
+  separator: {
+    height: Spacing.md,
+  },
   logo: {
     fontSize: FontSize.title,
     fontWeight: '700',
@@ -144,7 +153,6 @@ const styles = StyleSheet.create({
   summaryRow: {
     flexDirection: 'row',
     gap: Spacing.sm,
-    marginBottom: Spacing.lg,
   },
   summaryBox: {
     flex: 1,
@@ -163,23 +171,9 @@ const styles = StyleSheet.create({
     fontSize: FontSize.small,
     textAlign: 'center',
   },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginHorizontal: -Spacing.sm,
-  },
-  cardSlot: {
-    paddingHorizontal: Spacing.sm,
-    paddingBottom: Spacing.md,
-  },
-  bookCard: {
-    width: '100%',
-    flex: 1,
-  },
   button: {
     padding: Spacing.md,
     borderRadius: Radius.md,
-    marginTop: Spacing.sm,
   },
   buttonText: {
     textAlign: 'center',
