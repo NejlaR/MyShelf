@@ -1,4 +1,11 @@
-import { FlatList, StyleSheet, Text, View } from 'react-native';
+import { useSyncExternalStore } from 'react';
+import {
+  FlatList,
+  StyleSheet,
+  Text,
+  View,
+  useWindowDimensions,
+} from 'react-native';
 import {
   SafeAreaView,
   useSafeAreaInsets,
@@ -9,9 +16,37 @@ import { FontSize, Radius, Spacing } from '@/constants/theme';
 import { books } from '@/data/books';
 import { useTheme } from '@/hooks/use-theme';
 
+const subscribe = () => () => {};
+const getClientSnapshot = () => true;
+const getServerSnapshot = () => false;
+
 export default function MyShelfScreen() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
+
+  const hasHydrated = useSyncExternalStore(
+    subscribe,
+    getClientSnapshot,
+    getServerSnapshot
+  );
+
+  const screenWidth = hasHydrated ? width : 360;
+
+  const columns =
+    screenWidth >= 900 ? 3 : screenWidth >= 600 ? 2 : 1;
+
+  const availableWidth =
+    screenWidth - insets.left - insets.right;
+
+  const cardWidth = Math.max(
+    0,
+    (
+      availableWidth -
+      2 * Spacing.md -
+      (columns - 1) * Spacing.md
+    ) / columns
+  );
 
   const summary = books.reduce(
     (result, book) => ({
@@ -36,10 +71,17 @@ export default function MyShelfScreen() {
       style={[styles.screen, { backgroundColor: theme.background }]}
     >
       <FlatList
+        key={columns}
         style={styles.list}
         data={books}
+        numColumns={columns}
+        columnWrapperStyle={
+          columns > 1 ? styles.columnRow : undefined
+        }
         keyExtractor={(book) => book.id}
-        renderItem={({ item }) => <BookCard book={item} />}
+        renderItem={({ item }) => (
+          <BookCard book={item} style={{ width: cardWidth }} />
+        )}
         ItemSeparatorComponent={() => (
           <View style={styles.separator} />
         )}
@@ -126,6 +168,9 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: Spacing.md,
     paddingTop: Spacing.lg,
+  },
+  columnRow: {
+    gap: Spacing.md,
   },
   header: {
     marginBottom: Spacing.md,
