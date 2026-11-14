@@ -1,4 +1,4 @@
-import { useSyncExternalStore } from 'react';
+import { useState, useSyncExternalStore } from 'react';
 import {
   FlatList,
   StyleSheet,
@@ -24,6 +24,7 @@ export default function MyShelfScreen() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
+  const [contentWidth, setContentWidth] = useState(0);
 
   const hasHydrated = useSyncExternalStore(
     subscribe,
@@ -36,16 +37,9 @@ export default function MyShelfScreen() {
   const columns =
     screenWidth >= 900 ? 3 : screenWidth >= 600 ? 2 : 1;
 
-  const availableWidth =
-    screenWidth - insets.left - insets.right;
-
   const cardWidth = Math.max(
     0,
-    (
-      availableWidth -
-      2 * Spacing.md -
-      (columns - 1) * Spacing.md
-    ) / columns
+    (contentWidth - (columns - 1) * Spacing.md) / columns
   );
 
   const summary = books.reduce(
@@ -90,7 +84,11 @@ export default function MyShelfScreen() {
           { paddingBottom: Spacing.md + insets.bottom },
         ]}
         ListHeaderComponent={
-          <View>
+          <View
+            onLayout={(event) => {
+              setContentWidth(event.nativeEvent.layout.width);
+            }}
+          >
             <Text style={[styles.logo, { color: theme.primary }]}>
               MyShelf
             </Text>
