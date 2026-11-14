@@ -20,53 +20,48 @@ import { fetchBooks } from '@/data/api';
 import { useTheme } from '@/hooks/use-theme';
 
 const subscribe = () => () => {};
-const getClientSnapshot = () => true;
-const getServerSnapshot = () => false;
-
-type LoadStatus = 'loading' | 'error' | 'ready';
+const clientSnapshot = () => true;
+const serverSnapshot = () => false;
 
 export default function MyShelfScreen() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
 
-  const [contentWidth, setContentWidth] = useState(0);
   const [books, setBooks] = useState<Book[]>([]);
-  const [status, setStatus] = useState<LoadStatus>('loading');
-  const [errorMessage, setErrorMessage] = useState('');
+  const [status, setStatus] = useState<'loading' | 'error' | 'ready'>('loading');
+  const [error, setError] = useState('');
   const [attempt, setAttempt] = useState(0);
+  const [refreshing, setRefreshing] = useState(false);
+  const [contentWidth, setContentWidth] = useState(0);
 
-  const hasHydrated = useSyncExternalStore(
+  const hydrated = useSyncExternalStore(
     subscribe,
-    getClientSnapshot,
-    getServerSnapshot
+    clientSnapshot,
+    serverSnapshot
   );
 
   useEffect(() => {
     let ignore = false;
 
-    async function loadBooks() {
+    async function load() {
       try {
         const result = await fetchBooks();
 
         if (!ignore) {
           setBooks(result);
-          setErrorMessage('');
+          setError('');
           setStatus('ready');
         }
-      } catch (error) {
+      } catch {
         if (!ignore) {
-          setErrorMessage(
-            error instanceof Error
-              ? error.message
-              : 'Could not load books'
-          );
+          setError('Could not load books');
           setStatus('error');
         }
       }
     }
 
-    void loadBooks();
+    void load();
 
     return () => {
       ignore = true;
@@ -75,35 +70,46 @@ export default function MyShelfScreen() {
 
   function retry() {
     setStatus('loading');
-    setErrorMessage('');
-    setAttempt((current) => current + 1);
+    setError('');
+    setAttempt((value) => value + 1);
   }
 
-  const screenWidth = hasHydrated ? width : 360;
+  async function refresh() {
+    if (refreshing || status !== 'ready') return;
 
-  const columns =
-    screenWidth >= 900 ? 3 : screenWidth >= 600 ? 2 : 1;
+    setRefreshing(true);
+    setError('');
 
+    try {
+      const result = await fetchBooks();
+      setBooks(result);
+    } catch {
+      setError('Could not refresh books. Pull down to try again.');
+    } finally {
+      setRefreshing(false);
+    }
+  }
+
+  const screenWidth = hydrated ? width : 360;
+  const columns = screenWidth >= 900 ? 3 : screenWidth >= 600 ? 2 : 1;
   const cardWidth = Math.max(
     0,
     (contentWidth - (columns - 1) * Spacing.md) / columns
   );
 
-  const summary = books.reduce(
-    (result, book) => ({
-      total: result.total + 1,
-      reading:
-        result.reading + (book.status === 'Currently Reading' ? 1 : 0),
-      finished:
-        result.finished + (book.status === 'Finished' ? 1 : 0),
+  const totals = books.reduce(
+    (sum, book) => ({
+      total: sum.total + 1,
+      reading: sum.reading + (book.status === 'Currently Reading' ? 1 : 0),
+      finished: sum.finished + (book.status === 'Finished' ? 1 : 0),
     }),
     { total: 0, reading: 0, finished: 0 }
   );
 
   const statistics = [
-    { label: 'Books', value: summary.total },
-    { label: 'Reading', value: summary.reading },
-    { label: 'Finished', value: summary.finished },
+    { label: 'Books', value: totals.total },
+    { label: 'Reading', value: totals.reading },
+    { label: 'Finished', value: totals.finished },
   ];
 
   return (
@@ -113,61 +119,87 @@ export default function MyShelfScreen() {
     >
       <FlatList
         key={columns}
-        style={styles.list}
+        style={styles.screen}
         data={books}
+        refreshing={refreshing}
+        onRefresh={refresh}
         numColumns={columns}
-        columnWrapperStyle={
-          columns > 1 ? styles.columnRow : undefined
-        }
+        columnWrapperStyle={columns > 1 ? styles.row : undefined}
         keyExtractor={(book) => book.id}
         renderItem={({ item }) => (
           <BookCard book={item} style={{ width: cardWidth }} />
         )}
-        ItemSeparatorComponent={() => (
-          <View style={styles.separator} />
-        )}
+        ItemSeparatorComponent={() => <View style={styles.separator} />}
         contentContainerStyle={[
           styles.content,
           { paddingBottom: Spacing.md + insets.bottom },
         ]}
+        ListHeaderComponent={
+          <View
+            onLayout={(event) => {
+              setContentWidth(event.nativeEvent.layout.width);
+            }}
+          >
+            <Text style={[styles.logo, { color: theme.primary }]}>
+              MyShelf
+            </Text>
+            <Text style={[styles.heading, { color: theme.text }]}>
+              My Books
+            </Text>
+            <Text style={[styles.subtitle, { color: theme.muted }]}>
+              Your little library.
+            </Text>
+
+            <View style={styles.summaryRow}>
+              {statistics.map((item) => (
+                <View
+                  key={item.label}
+                  style={[
+                    styles.summaryBox,
+                    {
+                      backgroundColor: theme.card,
+                      borderColor: theme.border,
+                    },
+                  ]}
+                >
+                  <Text style={[styles.number, { color: theme.primary }]}>
+                    {item.value}
+                  </Text>
+                  <Text style={[styles.label, { color: theme.muted }]}>
+                    {item.label}
+                  </Text>
+                </View>
+              ))}
+            </View>
+
+            {status === 'ready' && error !== '' && (
+              <Text style={[styles.notice, { color: theme.text }]}>
+                {error}
+              </Text>
+            )}
+          </View>
+        }
+        ListHeaderComponentStyle={styles.header}
         ListEmptyComponent={
-          <View style={styles.emptyContainer}>
+          <View style={styles.empty}>
             {status === 'loading' ? (
               <View style={styles.stateBox}>
-                <ActivityIndicator
-                  size="large"
-                  color={theme.primary}
-                  accessibilityLabel="Loading books"
-                />
-
+                <ActivityIndicator size="large" color={theme.primary} />
                 <Text style={[styles.message, { color: theme.muted }]}>
                   Loading books...
                 </Text>
               </View>
             ) : status === 'error' ? (
               <View style={styles.stateBox}>
-                <Text
-                  accessibilityRole="alert"
-                  style={[styles.stateTitle, { color: theme.text }]}
-                >
-                  {errorMessage}
+                <Text style={[styles.errorTitle, { color: theme.text }]}>
+                  {error}
                 </Text>
-
                 <Pressable
                   onPress={retry}
                   accessibilityRole="button"
-                  style={({ pressed }) => [
-                    styles.button,
-                    { backgroundColor: theme.primary },
-                    pressed && styles.pressed,
-                  ]}
+                  style={[styles.button, { backgroundColor: theme.primary }]}
                 >
-                  <Text
-                    style={[
-                      styles.buttonText,
-                      { color: theme.onPrimary },
-                    ]}
-                  >
+                  <Text style={[styles.buttonText, { color: theme.onPrimary }]}>
                     Try again
                   </Text>
                 </Pressable>
@@ -180,73 +212,10 @@ export default function MyShelfScreen() {
             )}
           </View>
         }
-        ListHeaderComponent={
-          <View
-            onLayout={(event) => {
-              setContentWidth(event.nativeEvent.layout.width);
-            }}
-          >
-            <Text style={[styles.logo, { color: theme.primary }]}>
-              MyShelf
-            </Text>
-
-            <Text style={[styles.heading, { color: theme.text }]}>
-              My Books
-            </Text>
-
-            <Text style={[styles.subtitle, { color: theme.muted }]}>
-              Your little library.
-            </Text>
-
-            <View style={styles.summaryRow}>
-              {statistics.map((statistic) => (
-                <View
-                  key={statistic.label}
-                  style={[
-                    styles.summaryBox,
-                    {
-                      backgroundColor: theme.card,
-                      borderColor: theme.border,
-                    },
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.summaryNumber,
-                      { color: theme.primary },
-                    ]}
-                  >
-                    {statistic.value}
-                  </Text>
-
-                  <Text
-                    style={[
-                      styles.summaryLabel,
-                      { color: theme.muted },
-                    ]}
-                  >
-                    {statistic.label}
-                  </Text>
-                </View>
-              ))}
-            </View>
-          </View>
-        }
-        ListHeaderComponentStyle={styles.header}
         ListFooterComponent={
           status === 'ready' ? (
-            <View
-              style={[
-                styles.button,
-                { backgroundColor: theme.primary },
-              ]}
-            >
-              <Text
-                style={[
-                  styles.buttonText,
-                  { color: theme.onPrimary },
-                ]}
-              >
+            <View style={[styles.button, { backgroundColor: theme.primary }]}>
+              <Text style={[styles.buttonText, { color: theme.onPrimary }]}>
                 + Add Book
               </Text>
             </View>
@@ -259,20 +228,17 @@ export default function MyShelfScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-  },
-  list: {
-    flex: 1,
-  },
+  screen: { flex: 1 },
   content: {
     flexGrow: 1,
     paddingHorizontal: Spacing.md,
     paddingTop: Spacing.lg,
   },
-  emptyContainer: {
-    flex: 1,
-  },
+  row: { gap: Spacing.md },
+  header: { marginBottom: Spacing.md },
+  footer: { marginTop: Spacing.lg },
+  separator: { height: Spacing.md },
+  empty: { flex: 1 },
   stateBox: {
     flex: 1,
     alignItems: 'center',
@@ -280,45 +246,18 @@ const styles = StyleSheet.create({
     gap: Spacing.md,
     padding: Spacing.lg,
   },
-  stateTitle: {
-    fontSize: FontSize.title,
-    fontWeight: '700',
-    textAlign: 'center',
-  },
-  message: {
-    fontSize: FontSize.body,
-    textAlign: 'center',
-  },
-  columnRow: {
-    gap: Spacing.md,
-  },
-  header: {
-    marginBottom: Spacing.md,
-  },
-  footer: {
-    marginTop: Spacing.lg,
-  },
-  separator: {
-    height: Spacing.md,
-  },
   logo: {
     fontSize: FontSize.title,
     fontWeight: '700',
     marginBottom: Spacing.lg,
   },
-  heading: {
-    fontSize: FontSize.hero,
-    fontWeight: '700',
-  },
+  heading: { fontSize: FontSize.hero, fontWeight: '700' },
   subtitle: {
     fontSize: FontSize.body,
     marginTop: Spacing.sm,
     marginBottom: Spacing.lg,
   },
-  summaryRow: {
-    flexDirection: 'row',
-    gap: Spacing.sm,
-  },
+  summaryRow: { flexDirection: 'row', gap: Spacing.sm },
   summaryBox: {
     flex: 1,
     alignItems: 'center',
@@ -328,24 +267,19 @@ const styles = StyleSheet.create({
     borderRadius: Radius.md,
     gap: Spacing.xs,
   },
-  summaryNumber: {
-    fontSize: FontSize.hero,
+  number: { fontSize: FontSize.hero, fontWeight: '700' },
+  label: { fontSize: FontSize.small, textAlign: 'center' },
+  message: { fontSize: FontSize.body, textAlign: 'center' },
+  errorTitle: {
+    fontSize: FontSize.title,
     fontWeight: '700',
-  },
-  summaryLabel: {
-    fontSize: FontSize.small,
     textAlign: 'center',
   },
-  button: {
-    padding: Spacing.md,
-    borderRadius: Radius.md,
-  },
+  notice: { fontSize: FontSize.body, marginTop: Spacing.md },
+  button: { padding: Spacing.md, borderRadius: Radius.md },
   buttonText: {
-    textAlign: 'center',
     fontSize: FontSize.body,
     fontWeight: '600',
-  },
-  pressed: {
-    opacity: 0.7,
+    textAlign: 'center',
   },
 });
