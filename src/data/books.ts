@@ -28,4 +28,22 @@ export const books: Book[] = [
     description:
       'Elizabeth Bennet navigates family expectations, first impressions, and her changing feelings for Mr. Darcy.',
   },
+    {
+    id: '4',
+    title: "Harry Potter and the Philosopher's Stone",
+    author: 'J. K. Rowling',
+    status: 'Want to Read',
+    photoUrl: 'https://covers.openlibrary.org/b/isbn/9780747532699-L.jpg',
+    description:
+      'Harry discovers that he is a wizard and begins his first year at Hogwarts, where he makes friends and uncovers a hidden mystery.',
+  },
+  {
+    id: '5',
+    title: 'The Hunger Games',
+    author: 'Suzanne Collins',
+    status: 'Finished',
+    photoUrl: 'https://covers.openlibrary.org/b/isbn/9780439023481-L.jpg',
+    description:
+      'Katniss Everdeen volunteers to take her sister’s place in a televised survival competition.',
+  },
 ];
