@@ -9,15 +9,7 @@ import {
 
 import { FontSize, Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
-
-export type Book = {
-  id: string;
-  title: string;
-  author: string;
-  status: 'Currently Reading' | 'Want to Read' | 'Finished';
-  photoUrl: string;
-  description: string;
-};
+import type { Book } from '@/types';
 
 type BookCardProps = {
   book: Book;

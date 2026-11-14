@@ -13,11 +13,12 @@ import {
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
 
-import { BookCard, type Book } from '@/components/BookCard';
+import { BookCard } from '@/components/BookCard';
 import EmptyState from '@/components/EmptyState';
 import { FontSize, Radius, Spacing } from '@/constants/theme';
 import { fetchBooks } from '@/data/api';
 import { useTheme } from '@/hooks/use-theme';
+import type { Book } from '@/types';
 
 const subscribe = () => () => {};
 const clientSnapshot = () => true;
@@ -92,6 +93,7 @@ export default function MyShelfScreen() {
 
   const screenWidth = hydrated ? width : 360;
   const columns = screenWidth >= 900 ? 3 : screenWidth >= 600 ? 2 : 1;
+
   const cardWidth = Math.max(
     0,
     (contentWidth - (columns - 1) * Spacing.md) / columns
@@ -143,9 +145,11 @@ export default function MyShelfScreen() {
             <Text style={[styles.logo, { color: theme.primary }]}>
               MyShelf
             </Text>
+
             <Text style={[styles.heading, { color: theme.text }]}>
               My Books
             </Text>
+
             <Text style={[styles.subtitle, { color: theme.muted }]}>
               Your little library.
             </Text>
@@ -165,6 +169,7 @@ export default function MyShelfScreen() {
                   <Text style={[styles.number, { color: theme.primary }]}>
                     {item.value}
                   </Text>
+
                   <Text style={[styles.label, { color: theme.muted }]}>
                     {item.label}
                   </Text>
@@ -185,6 +190,7 @@ export default function MyShelfScreen() {
             {status === 'loading' ? (
               <View style={styles.stateBox}>
                 <ActivityIndicator size="large" color={theme.primary} />
+
                 <Text style={[styles.message, { color: theme.muted }]}>
                   Loading books...
                 </Text>
@@ -194,6 +200,7 @@ export default function MyShelfScreen() {
                 <Text style={[styles.errorTitle, { color: theme.text }]}>
                   {error}
                 </Text>
+
                 <Pressable
                   onPress={retry}
                   accessibilityRole="button"

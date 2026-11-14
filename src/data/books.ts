@@ -1,5 +1,4 @@
-import type { Book } from '@/components/BookCard';
-
+import type { Book } from '@/types';
 export const books: Book[] = [
   {
     id: '1',
