@@ -1,5 +1,6 @@
 import {
   Image,
+  Pressable,
   StyleSheet,
   Text,
   View,
@@ -20,13 +21,17 @@ export function BookCard({ book, style }: BookCardProps) {
   const theme = useTheme();
 
   return (
-    <View
-      style={[
+    <Pressable
+      onPress={() => console.log('Open book', book.id)}
+      accessibilityRole="button"
+      accessibilityLabel={`${book.title}, ${book.author}, ${book.status}`}
+      style={({ pressed }) => [
         styles.card,
         {
           backgroundColor: theme.card,
           borderColor: theme.border,
         },
+        pressed && styles.pressed,
         style,
       ]}
     >
@@ -62,7 +67,7 @@ export function BookCard({ book, style }: BookCardProps) {
           {book.author}
         </Text>
       </View>
-    </View>
+    </Pressable>
   );
 }
 
@@ -71,6 +76,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: Radius.md,
     overflow: 'hidden',
+  },
+  pressed: {
+    opacity: 0.6,
   },
   photoContainer: {
     width: '100%',
