@@ -12,6 +12,7 @@ import {
 } from 'react-native-safe-area-context';
 
 import { BookCard } from '@/components/BookCard';
+import EmptyState from '@/components/EmptyState';
 import { FontSize, Radius, Spacing } from '@/constants/theme';
 import { books } from '@/data/books';
 import { useTheme } from '@/hooks/use-theme';
@@ -83,6 +84,14 @@ export default function MyShelfScreen() {
           styles.content,
           { paddingBottom: Spacing.md + insets.bottom },
         ]}
+        ListEmptyComponent={
+          <View style={styles.emptyContainer}>
+            <EmptyState
+              title="No books yet"
+              message="Your books will appear here."
+            />
+          </View>
+        }
         ListHeaderComponent={
           <View
             onLayout={(event) => {
@@ -164,8 +173,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
+    flexGrow: 1,
     paddingHorizontal: Spacing.md,
     paddingTop: Spacing.lg,
+  },
+  emptyContainer: {
+    flex: 1,
   },
   columnRow: {
     gap: Spacing.md,
