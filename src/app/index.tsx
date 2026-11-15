@@ -27,12 +27,19 @@ const clientSnapshot = () => true;
 const serverSnapshot = () => false;
 
 type Filter = 'All' | Book['status'];
+type SortOrder = 'Default' | 'Title A–Z' | 'Title Z–A';
 
 const filters: Filter[] = [
   'All',
   'Currently Reading',
   'Want to Read',
   'Finished',
+];
+
+const sortOptions: SortOrder[] = [
+  'Default',
+  'Title A–Z',
+  'Title Z–A',
 ];
 
 export default function MyShelfScreen() {
@@ -47,6 +54,7 @@ export default function MyShelfScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [contentWidth, setContentWidth] = useState(0);
   const [filter, setFilter] = useState<Filter>('All');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('Default');
 
   const hydrated = useSyncExternalStore(
     subscribe,
@@ -108,10 +116,7 @@ export default function MyShelfScreen() {
       'Delete book?',
       `"${book.title}" will be removed from your list.`,
       [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
+        { text: 'Cancel', style: 'cancel' },
         {
           text: 'Delete',
           style: 'destructive',
@@ -148,10 +153,18 @@ export default function MyShelfScreen() {
     { label: 'Finished', value: totals.finished },
   ];
 
-  const visibleBooks =
+  const filteredBooks =
     filter === 'All'
       ? books
       : books.filter((book) => book.status === filter);
+
+  const visibleBooks = [...filteredBooks];
+
+  if (sortOrder === 'Title A–Z') {
+    visibleBooks.sort((a, b) => a.title.localeCompare(b.title, 'en'));
+  } else if (sortOrder === 'Title Z–A') {
+    visibleBooks.sort((a, b) => b.title.localeCompare(a.title, 'en'));
+  }
 
   return (
     <SafeAreaView
@@ -212,7 +225,6 @@ export default function MyShelfScreen() {
                   <Text style={[styles.number, { color: theme.primary }]}>
                     {item.value}
                   </Text>
-
                   <Text style={[styles.label, { color: theme.muted }]}>
                     {item.label}
                   </Text>
@@ -231,6 +243,17 @@ export default function MyShelfScreen() {
               ))}
             </View>
 
+            <View style={styles.filters}>
+              {sortOptions.map((item) => (
+                <FilterChip
+                  key={item}
+                  label={item}
+                  selected={sortOrder === item}
+                  onPress={() => setSortOrder(item)}
+                />
+              ))}
+            </View>
+
             {status === 'ready' && error !== '' && (
               <Text style={[styles.notice, { color: theme.text }]}>
                 {error}
@@ -244,7 +267,6 @@ export default function MyShelfScreen() {
             {status === 'loading' ? (
               <View style={styles.stateBox}>
                 <ActivityIndicator size="large" color={theme.primary} />
-
                 <Text style={[styles.message, { color: theme.muted }]}>
                   Loading books...
                 </Text>
