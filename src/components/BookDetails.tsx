@@ -15,6 +15,8 @@ export default function BookDetails({ book }: Props) {
     { label: 'ID', value: book.id },
     { label: 'Author', value: book.author },
     { label: 'Status', value: book.status },
+    { label: 'Added', value: book.addedAt },
+    { label: 'Pages', value: String(book.pages) },
   ];
 
   return (

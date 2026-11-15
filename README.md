@@ -51,11 +51,15 @@ npm.cmd start
 - Pull-to-refresh while existing books remain visible.
 - Reading-status filters with specific empty messages.
 - Long-press deletion with Cancel and Delete confirmation.
-- Default, title A–Z and title Z–A sorting.
+- Default, Newest and Longest sorting.
+- Newest shows the most recently added books first.
+- Longest shows books with the highest page count first.
 - Sorting uses a copy and preserves the original order.
 - Temporarily tested scrolling with 200 items on a phone.
 
 Normal operation uses five sample books.
+
+Dates added and page counts are sample values used to demonstrate sorting.
 
 Deletion only changes local component state. Pull-to-refresh or reloading restores the sample books.
 
@@ -69,7 +73,7 @@ Explore currently displays the first sample book. Opening a selected book from t
 - `src/app/explore.tsx` — displays the first sample book's details.
 - `src/types.ts` — shared Book type.
 - `src/components/BookCard.tsx` — reusable interactive book card.
-- `src/components/BookDetails.tsx` — reusable book details.
+- `src/components/BookDetails.tsx` — image, title, author, status, date added, page count and description.
 - `src/components/EmptyState.tsx` — empty-list messages.
 - `src/components/FilterChip.tsx` — filter and sort buttons.
 - `src/components/shelf-screen.tsx` — scrollable details screen container.
@@ -103,7 +107,8 @@ Explore currently displays the first sample book. Opening a selected book from t
 - Long-press a book and check both Cancel and Delete.
 - Check that deletion updates the summary statistics.
 - Refresh and check that deleted sample books return.
-- Switch between both title sort orders and Default.
+- Check Newest, Longest and Default sorting.
+- Check that sorting also works with a reading-status filter.
 
 The app keeps portrait orientation on the phone. Different widths are tested in the browser.
 
@@ -138,6 +143,8 @@ npm run lint
 
 `sort` orders a copied array so the original order remains available.
 
+Newest compares dates stored as YYYY-MM-DD. Longest compares page counts from highest to lowest.
+
 `FlatList` displays the book list, while `ScrollView` keeps book details scrollable.
 
 `SafeAreaView` and safe area insets keep content clear of system bars.
@@ -159,7 +166,7 @@ Book cover images are loaded from Open Library and require an internet connectio
 - [x] Retry and pull-to-refresh
 - [x] Filter books by reading status
 - [x] Delete books with confirmation
-- [x] Sort books
+- [x] Sort books by date added and page count
 - [ ] Open book details from the list
 - [ ] Add and edit books
 - [ ] Save data on the device

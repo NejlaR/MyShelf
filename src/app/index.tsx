@@ -27,7 +27,7 @@ const clientSnapshot = () => true;
 const serverSnapshot = () => false;
 
 type Filter = 'All' | Book['status'];
-type SortOrder = 'Default' | 'Title A–Z' | 'Title Z–A';
+type SortOrder = 'Default' | 'Newest' | 'Longest';
 
 const filters: Filter[] = [
   'All',
@@ -38,8 +38,8 @@ const filters: Filter[] = [
 
 const sortOptions: SortOrder[] = [
   'Default',
-  'Title A–Z',
-  'Title Z–A',
+  'Newest',
+  'Longest',
 ];
 
 export default function MyShelfScreen() {
@@ -160,10 +160,10 @@ export default function MyShelfScreen() {
 
   const visibleBooks = [...filteredBooks];
 
-  if (sortOrder === 'Title A–Z') {
-    visibleBooks.sort((a, b) => a.title.localeCompare(b.title, 'en'));
-  } else if (sortOrder === 'Title Z–A') {
-    visibleBooks.sort((a, b) => b.title.localeCompare(a.title, 'en'));
+  if (sortOrder === 'Newest') {
+    visibleBooks.sort((a, b) => b.addedAt.localeCompare(a.addedAt));
+  } else if (sortOrder === 'Longest') {
+    visibleBooks.sort((a, b) => b.pages - a.pages);
   }
 
   return (
@@ -225,6 +225,7 @@ export default function MyShelfScreen() {
                   <Text style={[styles.number, { color: theme.primary }]}>
                     {item.value}
                   </Text>
+
                   <Text style={[styles.label, { color: theme.muted }]}>
                     {item.label}
                   </Text>
@@ -267,6 +268,7 @@ export default function MyShelfScreen() {
             {status === 'loading' ? (
               <View style={styles.stateBox}>
                 <ActivityIndicator size="large" color={theme.primary} />
+
                 <Text style={[styles.message, { color: theme.muted }]}>
                   Loading books...
                 </Text>
