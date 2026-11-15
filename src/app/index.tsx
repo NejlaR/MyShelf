@@ -1,6 +1,7 @@
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
   Pressable,
   StyleSheet,
@@ -57,21 +58,21 @@ export default function MyShelfScreen() {
     let ignore = false;
 
     async function load() {
-  try {
-    const result = await fetchBooks();
+      try {
+        const result = await fetchBooks();
 
-    if (!ignore) {
-      setBooks(result);
-      setError('');
-      setStatus('ready');
+        if (!ignore) {
+          setBooks(result);
+          setError('');
+          setStatus('ready');
+        }
+      } catch {
+        if (!ignore) {
+          setError('Could not load books');
+          setStatus('error');
+        }
+      }
     }
-  } catch {
-    if (!ignore) {
-      setError('Could not load books');
-      setStatus('error');
-    }
-  }
-}
 
     void load();
 
@@ -100,6 +101,28 @@ export default function MyShelfScreen() {
     } finally {
       setRefreshing(false);
     }
+  }
+
+  function confirmDelete(book: Book) {
+    Alert.alert(
+      'Delete book?',
+      `"${book.title}" will be removed from your list.`,
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => {
+            setBooks((current) =>
+              current.filter((item) => item.id !== book.id)
+            );
+          },
+        },
+      ]
+    );
   }
 
   const screenWidth = hydrated ? width : 360;
@@ -145,7 +168,11 @@ export default function MyShelfScreen() {
         columnWrapperStyle={columns > 1 ? styles.row : undefined}
         keyExtractor={(book) => book.id}
         renderItem={({ item }) => (
-          <BookCard book={item} style={{ width: cardWidth }} />
+          <BookCard
+            book={item}
+            style={{ width: cardWidth }}
+            onLongPress={() => confirmDelete(item)}
+          />
         )}
         ItemSeparatorComponent={() => <View style={styles.separator} />}
         contentContainerStyle={[
