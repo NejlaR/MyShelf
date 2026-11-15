@@ -15,6 +15,7 @@ import {
 
 import { BookCard } from '@/components/BookCard';
 import EmptyState from '@/components/EmptyState';
+import FilterChip from '@/components/FilterChip';
 import { FontSize, Radius, Spacing } from '@/constants/theme';
 import { fetchBooks } from '@/data/api';
 import { useTheme } from '@/hooks/use-theme';
@@ -23,6 +24,15 @@ import type { Book } from '@/types';
 const subscribe = () => () => {};
 const clientSnapshot = () => true;
 const serverSnapshot = () => false;
+
+type Filter = 'All' | Book['status'];
+
+const filters: Filter[] = [
+  'All',
+  'Currently Reading',
+  'Want to Read',
+  'Finished',
+];
 
 export default function MyShelfScreen() {
   const theme = useTheme();
@@ -35,6 +45,7 @@ export default function MyShelfScreen() {
   const [attempt, setAttempt] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
   const [contentWidth, setContentWidth] = useState(0);
+  const [filter, setFilter] = useState<Filter>('All');
 
   const hydrated = useSyncExternalStore(
     subscribe,
@@ -46,21 +57,21 @@ export default function MyShelfScreen() {
     let ignore = false;
 
     async function load() {
-      try {
-        const result = await fetchBooks();
+  try {
+    const result = await fetchBooks();
 
-        if (!ignore) {
-          setBooks(result);
-          setError('');
-          setStatus('ready');
-        }
-      } catch {
-        if (!ignore) {
-          setError('Could not load books');
-          setStatus('error');
-        }
-      }
+    if (!ignore) {
+      setBooks(result);
+      setError('');
+      setStatus('ready');
     }
+  } catch {
+    if (!ignore) {
+      setError('Could not load books');
+      setStatus('error');
+    }
+  }
+}
 
     void load();
 
@@ -114,6 +125,11 @@ export default function MyShelfScreen() {
     { label: 'Finished', value: totals.finished },
   ];
 
+  const visibleBooks =
+    filter === 'All'
+      ? books
+      : books.filter((book) => book.status === filter);
+
   return (
     <SafeAreaView
       edges={['top', 'left', 'right']}
@@ -122,7 +138,7 @@ export default function MyShelfScreen() {
       <FlatList
         key={columns}
         style={styles.screen}
-        data={books}
+        data={visibleBooks}
         refreshing={refreshing}
         onRefresh={refresh}
         numColumns={columns}
@@ -177,6 +193,17 @@ export default function MyShelfScreen() {
               ))}
             </View>
 
+            <View style={styles.filters}>
+              {filters.map((item) => (
+                <FilterChip
+                  key={item}
+                  label={item}
+                  selected={filter === item}
+                  onPress={() => setFilter(item)}
+                />
+              ))}
+            </View>
+
             {status === 'ready' && error !== '' && (
               <Text style={[styles.notice, { color: theme.text }]}>
                 {error}
@@ -213,8 +240,16 @@ export default function MyShelfScreen() {
               </View>
             ) : (
               <EmptyState
-                title="No books yet"
-                message="Your books will appear here."
+                title={
+                  books.length === 0
+                    ? 'No books yet'
+                    : `No books with status "${filter}"`
+                }
+                message={
+                  books.length === 0
+                    ? 'Your books will appear here.'
+                    : 'Choose another reading status.'
+                }
               />
             )}
           </View>
@@ -273,6 +308,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: Radius.md,
     gap: Spacing.xs,
+  },
+  filters: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.sm,
+    marginTop: Spacing.md,
   },
   number: { fontSize: FontSize.hero, fontWeight: '700' },
   label: { fontSize: FontSize.small, textAlign: 'center' },
