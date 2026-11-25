@@ -11,79 +11,82 @@ type Props = {
 export default function BookDetails({ book }: Props) {
   const theme = useTheme();
 
-  const fields = [
-    { label: 'ID', value: book.id },
-    { label: 'Author', value: book.author },
+  const statistics = [
     { label: 'Status', value: book.status },
-    { label: 'Added', value: book.addedAt },
     { label: 'Pages', value: String(book.pages) },
+    { label: 'Added', value: book.addedAt },
   ];
 
   return (
-    <View style={styles.container}>
-      <Text style={[styles.heading, { color: theme.text }]}>
-        Book Details
-      </Text>
+    <View
+      style={[
+        styles.card,
+        {
+          backgroundColor: theme.card,
+          borderColor: theme.border,
+        },
+      ]}
+    >
+      <Image
+        source={{ uri: book.photoUrl }}
+        style={styles.photo}
+        accessibilityLabel={`Cover of ${book.title}`}
+        resizeMode="cover"
+      />
 
-      <View
-        style={[
-          styles.card,
-          {
-            backgroundColor: theme.card,
-            borderColor: theme.border,
-          },
-        ]}
-      >
-        <Image
-          source={{ uri: book.photoUrl }}
-          style={styles.photo}
-          accessibilityLabel={`Cover of ${book.title}`}
-          resizeMode="cover"
-        />
+      <View style={styles.content}>
+        <Text style={[styles.title, { color: theme.text }]}>
+          {book.title}
+        </Text>
 
-        <View style={styles.content}>
-          <Text style={[styles.heading, { color: theme.text }]}>
-            {book.title}
-          </Text>
+        <Text style={[styles.author, { color: theme.muted }]}>
+          {book.author}
+        </Text>
 
-          {fields.map((field) => (
+        <Text style={[styles.label, { color: theme.muted }]}>
+          ID: {book.id}
+        </Text>
+
+        <View style={styles.statistics}>
+          {statistics.map((item) => (
             <View
-              key={field.label}
-              style={[styles.row, { borderBottomColor: theme.border }]}
+              key={item.label}
+              style={[
+                styles.box,
+                {
+                  backgroundColor: theme.background,
+                  borderColor: theme.border,
+                },
+              ]}
             >
-              <Text style={[styles.label, { color: theme.muted }]}>
-                {field.label}
+              <Text style={[styles.value, { color: theme.text }]}>
+                {item.value}
               </Text>
 
-              <Text style={[styles.value, { color: theme.text }]}>
-                {field.value}
+              <Text style={[styles.label, { color: theme.muted }]}>
+                {item.label}
               </Text>
             </View>
           ))}
-
-          {book.description ? (
-            <Text style={[styles.description, { color: theme.text }]}>
-              {book.description}
-            </Text>
-          ) : null}
         </View>
+
+        <Text style={[styles.sectionTitle, { color: theme.text }]}>
+          Description
+        </Text>
+
+        <Text style={[styles.description, { color: theme.text }]}>
+          {book.description?.trim() || 'No description for this book.'}
+        </Text>
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  card: {
     width: '100%',
     maxWidth: 600,
     alignSelf: 'center',
-    gap: Spacing.lg,
-  },
-  heading: {
-    fontSize: FontSize.hero,
-    fontWeight: '700',
-  },
-  card: {
     borderWidth: 1,
     borderRadius: Radius.md,
     overflow: 'hidden',
@@ -96,25 +99,42 @@ const styles = StyleSheet.create({
     padding: Spacing.md,
     gap: Spacing.md,
   },
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: Spacing.md,
-    paddingBottom: Spacing.sm,
-    borderBottomWidth: 1,
+  title: {
+    fontSize: FontSize.hero,
+    fontWeight: '700',
   },
-  label: {
+  author: {
     fontSize: FontSize.body,
-    flexShrink: 1,
+  },
+  statistics: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.sm,
+  },
+  box: {
+    flexGrow: 1,
+    flexBasis: 120,
+    padding: Spacing.sm,
+    borderWidth: 1,
+    borderRadius: Radius.md,
+    alignItems: 'center',
+    gap: Spacing.xs,
   },
   value: {
     fontSize: FontSize.body,
     fontWeight: '600',
-    textAlign: 'right',
-    flex: 1,
+    textAlign: 'center',
+  },
+  label: {
+    fontSize: FontSize.small,
+    textAlign: 'center',
+  },
+  sectionTitle: {
+    fontSize: FontSize.title,
+    fontWeight: '600',
   },
   description: {
     fontSize: FontSize.body,
-    lineHeight: 24,
+    lineHeight: 26,
   },
 });

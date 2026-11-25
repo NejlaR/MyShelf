@@ -80,10 +80,8 @@ export default function RootLayout() {
         />
 
         <Stack.Screen
-          name="explore"
-          options={{
-            title: 'Book Details',
-          }}
+          name="book/[id]"
+          options={{ title: '' }}
         />
       </Stack>
     </ThemeProvider>
