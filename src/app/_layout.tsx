@@ -1,17 +1,23 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router';
+import {
+  DarkTheme,
+  DefaultTheme,
+  Link,
+  Stack,
+  ThemeProvider,
+} from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useColorScheme } from 'react-native';
 
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
-import AppTabs from '@/components/app-tabs';
+import { FontSize, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
 SplashScreen.preventAutoHideAsync();
 
-export default function TabLayout() {
+export default function RootLayout() {
   const colorScheme = useColorScheme();
-  const colors = useTheme();
+  const theme = useTheme();
   const isDark = colorScheme === 'dark';
   const baseTheme = isDark ? DarkTheme : DefaultTheme;
 
@@ -19,12 +25,12 @@ export default function TabLayout() {
     ...baseTheme,
     colors: {
       ...baseTheme.colors,
-      primary: colors.primary,
-      background: colors.background,
-      card: colors.card,
-      text: colors.text,
-      border: colors.border,
-      notification: colors.primary,
+      primary: theme.primary,
+      background: theme.background,
+      card: theme.card,
+      text: theme.text,
+      border: theme.border,
+      notification: theme.primary,
     },
   };
 
@@ -32,7 +38,54 @@ export default function TabLayout() {
     <ThemeProvider value={navigationTheme}>
       <StatusBar style={isDark ? 'light' : 'dark'} />
       <AnimatedSplashOverlay />
-      <AppTabs />
+
+      <Stack
+        screenOptions={{
+          headerStyle: {
+            backgroundColor: theme.background,
+          },
+          headerTintColor: theme.text,
+          headerShadowVisible: false,
+          contentStyle: {
+            backgroundColor: theme.background,
+          },
+        }}
+      >
+        <Stack.Screen
+          name="index"
+          options={{
+            title: 'MyShelf',
+            headerRight: () => (
+              <Link
+                href="/about"
+                style={{
+                  color: theme.primary,
+                  fontSize: FontSize.body,
+                  fontWeight: '600',
+                  paddingHorizontal: Spacing.md,
+                  paddingVertical: Spacing.sm,
+                }}
+              >
+                About
+              </Link>
+            ),
+          }}
+        />
+
+        <Stack.Screen
+          name="about"
+          options={{
+            title: 'About MyShelf',
+          }}
+        />
+
+        <Stack.Screen
+          name="explore"
+          options={{
+            title: 'Book Details',
+          }}
+        />
+      </Stack>
     </ThemeProvider>
   );
 }
