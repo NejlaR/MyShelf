@@ -1,3 +1,4 @@
+import { useRouter } from 'expo-router';
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import {
   ActivityIndicator,
@@ -43,6 +44,7 @@ const sortOptions: SortOrder[] = [
 ];
 
 export default function MyShelfScreen() {
+  const router = useRouter();
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
@@ -184,6 +186,12 @@ export default function MyShelfScreen() {
           <BookCard
             book={item}
             style={{ width: cardWidth }}
+            onPress={() =>
+              router.push({
+                pathname: '/book/[id]',
+                params: { id: item.id },
+              })
+            }
             onLongPress={() => confirmDelete(item)}
           />
         )}

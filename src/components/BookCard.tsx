@@ -15,25 +15,25 @@ import type { Book } from '@/types';
 type BookCardProps = {
   book: Book;
   style?: StyleProp<ViewStyle>;
+  onPress?: () => void;
   onLongPress?: () => void;
 };
 
 export function BookCard({
   book,
   style,
+  onPress,
   onLongPress,
 }: BookCardProps) {
   const theme = useTheme();
 
   return (
     <Pressable
-      onPress={() => console.log('Open book', book.id)}
+      onPress={onPress}
       onLongPress={onLongPress}
       accessibilityRole="button"
       accessibilityLabel={`${book.title}, ${book.author}, ${book.status}`}
-      accessibilityHint={
-        onLongPress ? 'Long press to delete' : undefined
-      }
+      accessibilityHint="Opens book details. Long press to delete."
       android_ripple={{ color: theme.border }}
       style={({ pressed }) => [
         styles.card,
