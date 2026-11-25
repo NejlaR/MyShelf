@@ -65,7 +65,19 @@ Deletion only changes local component state. Pull-to-refresh or reloading restor
 
 The Add Book control is a static preview. Adding, editing and saving books will be implemented in later milestones.
 
-Explore currently displays the first sample book. Opening a selected book from the list is planned for a later milestone.
+## Week 7 — List-to-Detail Navigation
+
+- About screen linked from the home header.
+- Themed Stack navigation.
+- Dynamic book details route: `/book/[id]`.
+- Tap a book card to open its details.
+- Book title displayed in the navigation header.
+- Scrollable cover image, author, status, page count, date and description.
+- Missing book IDs display a "Book not found" message.
+- Unknown paths display a custom "Page not found" screen.
+- Back to the list button also works when details are opened directly.
+- Typed routes checked with TypeScript.
+- Long press still opens the delete confirmation.
 
 ## Project Structure
 
@@ -80,8 +92,12 @@ Explore currently displays the first sample book. Opening a selected book from t
 - `src/constants/theme.ts` — colours and design scales.
 - `src/hooks/use-theme.ts` — selects light or dark colours.
 - `src/data/books.ts` — five sample books.
-- `src/data/api.ts` — simulated loading of book data.
+- `src/data/api.ts` — simulated loading and book lookup by ID
 - `docs/` — screenshots.
+- `src/app/_layout.tsx` — themed Stack navigation and headers.
+- `src/app/about.tsx` — app description.
+- `src/app/book/[id].tsx` — dynamic book details and return button.
+- `src/app/+not-found.tsx` — unknown-address screen.
 
 ## Screenshots
 
@@ -167,7 +183,7 @@ Book cover images are loaded from Open Library and require an internet connectio
 - [x] Filter books by reading status
 - [x] Delete books with confirmation
 - [x] Sort books by date added and page count
-- [ ] Open book details from the list
+- [X] Open book details from the list
 - [ ] Add and edit books
 - [ ] Save data on the device
 - [ ] User login and Supabase storage
