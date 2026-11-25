@@ -16,3 +16,7 @@ export async function fetchBooks(
 
   return books;
 }
+
+export function getBook(id: string): Book | undefined {
+  return books.find((book) => book.id === id);
+}
